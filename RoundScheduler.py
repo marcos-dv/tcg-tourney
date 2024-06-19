@@ -5,7 +5,7 @@ from Round import Round
 class RoundScheduler:
     
     # TODO add random seed
-    def __init__(self, players, rounds, points=None, seed=None):
+    def __init__(self, players, rounds, stats=None, seed=None):
         opponents = { p.name : set() for p in players }
         for r in rounds:
             for m in r.roundMatches:
@@ -14,11 +14,12 @@ class RoundScheduler:
         self.opponents = opponents
 
         # TODO precompute this...
-        if points is None:
-            points = { p.name : 3 for p in players }
-        self.points = points
+        if stats is None:
+            self.points = { p.name : 0 for p in players }
+        else:
+            self.points = { name:points for (name, wld, points, vpo, jg, jgo) in stats }
 
-        ordered_players = sorted([p.name for p in players], key=lambda x: points[x], reverse=True)
+        ordered_players = sorted([p.name for p in players], key=lambda x: self.points[x], reverse=True)
         self.players = ordered_players
         # players done
         done = { p:False for p in ordered_players }

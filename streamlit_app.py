@@ -87,6 +87,7 @@ def run_init_screen():
 ### MATCHES SCREEN ##
 #####################
 def run_matches_screen():
+    st.header("Round " + str(st.session_state.controller.get_current_round_number()))
     def save_tourney():
         tourney_json = st.session_state.controller.save_tourney()
         
@@ -107,7 +108,6 @@ def run_matches_screen():
     # TODO join two manual and not manual. The not manual should have disabled selectboxes...
     if not manual_matches:
         matches = st.session_state.controller.get_current_matches()
-        print(len(matches))
         for player1, player2 in matches:
             match_key = f"{player1} vs {player2}"
             col1, col2, col3 = st.columns([2, 1, 2])
@@ -141,7 +141,17 @@ def run_matches_screen():
 
     # Button to set the result for the match
     def next_round():
-        st.session_state.controller.next_round()
+        results = []
+        matches = st.session_state.controller.get_current_matches()
+        for player1, player2 in matches:
+            match_key = f"{player1} vs {player2}"
+            if f"{match_key} - 1" in st.session_state:
+                score1 = st.session_state[f"{match_key} - 1"]
+            if f"{match_key} - 2" in st.session_state:
+                score2 = st.session_state[f"{match_key} - 2"]
+            results.append((player1, player2, score1, score2))
+
+        st.session_state.controller.next_round(results=results)
         
     st.button("Finish round", on_click=next_round, key="send_results")
     def move_to_ranking():
@@ -153,7 +163,9 @@ def run_matches_screen():
 ### RANKING SCREEN ##
 #####################
 def run_ranking_screen():
-    st.write('WIP')
+    ranking = st.session_state.controller.get_ranking()
+    st.write(ranking)
+
     def move_to_matches():
         st.session_state.current_screen = matches_screen
         

@@ -1,3 +1,4 @@
+import pandas as pd
 import json
 from Tournament import Tournament
 
@@ -13,6 +14,12 @@ class Controller:
             return False
         self.tourney.start_tourney()
         return True
+
+    def next_round(self, results):
+        for p1,p2,s1,s2 in results:
+            self.tourney.send_result(p1,p2,s1,s2)
+            
+        self.tourney.generate_round()
         
     def get_participants_names(self):
         return self.tourney.participants_names
@@ -23,15 +30,24 @@ class Controller:
 
     def get_current_matches(self):
         return self.tourney.get_current_matches()
+
+    def get_current_round_number(self):
+        return self.tourney.get_current_round_number()
         
     def get_available_participants(self):
         return self.tourney.available_participants()
 
-	# to a dict
+    def get_ranking(self):
+        stats = self.tourney.get_stats()
+        # Creating a DataFrame from the list of tuples
+        stats_df = pd.DataFrame(stats, columns=['Name', 'Points', 'W-L-D', 'VPO', 'JG', 'JGO'])
+        return stats_df
+
+    # to a dict
     def save_tourney(self):
         return self.tourney.to_json()
 
-	# from a dict
+    # from a dict
     def load_tourney(self, tourney_json):
         td = json.loads(tourney_json)
         self.tourney = Tournament.from_dict(td)
