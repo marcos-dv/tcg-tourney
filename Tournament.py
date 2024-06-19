@@ -59,7 +59,8 @@ class Tournament:
         if len(self.rounds) > 0:
             self.rounds[-1].status = RoundStatus.FINISHED
         # TODO check type of tourney, swiss, etc
-        matches = RoundScheduler(self.participants, self.rounds, self.get_stats()).find_matches()
+        stats = self.get_stats() if len(self.rounds) > 0 else None
+        matches = RoundScheduler(self.participants, self.rounds, stats).find_matches()
         new_round = Round()
         new_round.roundMatches = [m for m in matches]
         new_round.set_status(RoundStatus.STARTED)
@@ -156,11 +157,11 @@ class Tournament:
         # TODO when drop is allowed, divide between the number of played rounds by that player!
         match_win_perc = {}
         for p in self.participants_names:
-            match_win_perc[p] = max(0.33, match_points[p] / (3*total_matches[p]))
+            match_win_perc[p] = max(0.33, match_points[p] / (3*total_matches[p])) if total_matches[p] != 0 else 0
 
         game_win_perc = {}
         for p in self.participants_names:
-            game_win_perc[p] = max(0.33, game_points[p] / (3*total_games[p]))
+            game_win_perc[p] = max(0.33, game_points[p] / (3*total_games[p])) if total_games[p] != 0 else 0
             
         # opponent match win perc
         vpo = {p:0 for p in self.participants_names}
@@ -168,7 +169,7 @@ class Tournament:
             v = 0
             for oppo in opponents[p]:
                 v += match_win_perc[oppo]
-            vpo[p] = (v/len(opponents[p])) if len(opponents[p]) > 0 else 1
+            vpo[p] = (v/len(opponents[p])) if len(opponents[p]) > 0 else 0
 
         # opponent match win perc
         jgo = {p:0 for p in self.participants_names}
@@ -176,7 +177,7 @@ class Tournament:
             v = 0
             for oppo in opponents[p]:
                 v += game_win_perc[oppo]
-            jgo[p] = (v/len(opponents[p])) if len(opponents[p]) > 0 else 1
+            jgo[p] = (v/len(opponents[p])) if len(opponents[p]) > 0 else 0
 
         from operator import itemgetter
         def sort_tuples_descending(data):
