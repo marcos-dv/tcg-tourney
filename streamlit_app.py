@@ -62,8 +62,8 @@ def run_init_screen():
             # To read file as string (use uploaded_file.read() or .getvalue() based on your Streamlit version)
             json_tourney = str(uploaded_file.read(), "utf-8")
             st.session_state.controller.load_tourney(json_tourney)
-            st.write(st.session_state.controller.tourney.participants_names)
             if DEBUG:
+                st.write(st.session_state.controller.tourney.participants_names)
                 st.write(st.session_state.controller.tourney.to_dict())
             st.success('Loaded!')
             # TODO issue: cannot modify a tournament if it is loaded
