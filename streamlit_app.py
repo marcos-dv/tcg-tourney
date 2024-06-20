@@ -110,7 +110,10 @@ def run_matches_screen():
     # TODO join two manual and not manual. The not manual should have disabled selectboxes...
     if not manual_matches:
         matches = st.session_state.controller.get_current_matches()
+        table = 1
         for player1, player2 in matches:
+            st.subheader("Table " + str(table))
+            table += 1
             match_key = f"{player1} vs {player2}"
             col1, col2, col3 = st.columns([2, 1, 2])
             with col1:
@@ -170,6 +173,7 @@ def run_matches_screen():
 ### RANKING SCREEN ##
 #####################
 def run_ranking_screen():
+    st.header("Round " + str(st.session_state.controller.get_current_round_number()))
     ranking = st.session_state.controller.get_ranking()
     if len(ranking) <= 3:
         ranking.index += 1 # 1-indexed
