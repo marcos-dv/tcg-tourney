@@ -65,6 +65,11 @@ class Tournament:
         new_round.roundMatches = [m for m in matches]
         new_round.set_status(RoundStatus.STARTED)
         self.add_round(new_round)
+        
+    def undo_last_round(self):
+        if len(self.rounds) > 1:
+            del self.rounds[-1]
+            self.rounds[-1].status = RoundStatus.STARTED
     
     def send_result(self, name1, name2, points1, points2):
         found = False
@@ -95,6 +100,8 @@ class Tournament:
         draw_games = {p:0 for p in self.participants_names}
         total_games = {p:0 for p in self.participants_names}
         game_points = {p:0 for p in self.participants_names}
+        
+        min_rate = 0.3333
         
         finished_rounds = 0
         # Update personal stats
@@ -157,11 +164,11 @@ class Tournament:
         # TODO when drop is allowed, divide between the number of played rounds by that player!
         match_win_perc = {}
         for p in self.participants_names:
-            match_win_perc[p] = max(0.33, match_points[p] / (3*total_matches[p])) if total_matches[p] != 0 else 0
+            match_win_perc[p] = max(min_rate, match_points[p] / (3*total_matches[p])) if total_matches[p] != 0 else 0
 
         game_win_perc = {}
         for p in self.participants_names:
-            game_win_perc[p] = max(0.33, game_points[p] / (3*total_games[p])) if total_games[p] != 0 else 0
+            game_win_perc[p] = max(min_rate, game_points[p] / (3*total_games[p])) if total_games[p] != 0 else 0
             
         # opponent match win perc
         vpo = {p:0 for p in self.participants_names}
@@ -183,9 +190,12 @@ class Tournament:
         def sort_tuples_descending(data):
             sorted_data = sorted(data, key=itemgetter(1, 2, 3, 4), reverse=True)
             return sorted_data
+        
+        def to_perc(val):
+            return str(format(100*val,".2f")) + '%'
 
         wld = {p:str(win_matches[p]) + '-' + str(loss_matches[p]) + '-' + str(draw_matches[p]) for p in self.participants_names}
-        stats_tuples = [(p, match_points[p], wld[p], round(100*vpo[p],2), round(100*game_win_perc[p],2), round(100*jgo[p],2)) for p in self.participants_names]
+        stats_tuples = [(p, match_points[p], wld[p], to_perc(vpo[p]), to_perc(game_win_perc[p]), to_perc(jgo[p])) for p in self.participants_names]
         return sort_tuples_descending(stats_tuples)
 
     def __str__(self):

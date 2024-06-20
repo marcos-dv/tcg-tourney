@@ -2,6 +2,8 @@ import pandas as pd
 import json
 from Tournament import Tournament
 
+DEBUG = False
+
 class Controller:
     def __init__(self):
         self.tourney = Tournament('Default tourney')
@@ -20,6 +22,9 @@ class Controller:
             self.tourney.send_result(p1,p2,s1,s2)
             
         self.tourney.generate_round()
+        
+    def undo_last_round(self):
+        self.tourney.undo_last_round()
         
     def get_participants_names(self):
         return self.tourney.participants_names
@@ -51,4 +56,5 @@ class Controller:
     def load_tourney(self, tourney_json):
         td = json.loads(tourney_json)
         self.tourney = Tournament.from_dict(td)
-        print(self.tourney)
+        if DEBUG:
+            print(self.tourney)
