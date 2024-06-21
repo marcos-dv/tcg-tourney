@@ -1,6 +1,7 @@
 import json
 import streamlit as st
 import pandas as pd
+import Messages as Text
 from Controller import Controller
 from Tournament import Tournament
 from Auxiliar import get_current_time_formatted
@@ -10,6 +11,13 @@ matches_screen = 2
 ranking_screen = 3
 DEBUG = False
 
+language = st.radio(
+    "",
+    Text.available_languages,
+    index=0,
+    horizontal=True
+)
+
 # Initialize session state to store participants
 if 'controller' not in st.session_state:
     st.session_state.controller = Controller()
@@ -18,7 +26,7 @@ if 'controller' not in st.session_state:
 if DEBUG:
     st.write(st.session_state.controller.tourney.to_dict())
 
-st.title("Tournament Manager")
+st.title(Text.app_title[language])
 #####################
 ### INITIAL SCREEN ##
 #####################
@@ -36,18 +44,18 @@ def run_init_screen():
     # Start tourney buttonl
     def launch_tournament():
         if st.session_state.controller.launch_tourney():
-            st.success("Tournament with participants: " + ", ".join(st.session_state.controller.get_participants_names()))
+            st.success(Text.launch_tourney_participants[language] + ", ".join(st.session_state.controller.get_participants_names()))
             st.session_state.current_screen = matches_screen
         else:
-            st.error("Not enough participants to start the tournament.")
+            st.error(Text.not_enough_players[language])
 
-    name_input = st.text_input("Enter participant's name", key='name')
+    name_input = st.text_input(Text.enter_player_name[language], key='name')
 
     col1, col2, col3 = st.columns(3)
-    col1.button("Add Participant", on_click=add_participant)
-    col2.button("Start Tournament ⚔️", on_click=launch_tournament)
+    col1.button(':blue['+Text.add_player[language]+']', on_click=add_participant)
+    col2.button(':orange['+Text.start_tournament[language]+']', on_click=launch_tournament)
     #col3.button("Load Tournament", on_click=load_tourney)
-    uploaded_file = col3.file_uploader("Load Tournament")
+    uploaded_file = col3.file_uploader(Text.load_tournament[language])
 
     # Check if a file has been uploaded
     if uploaded_file is not None:
@@ -65,7 +73,7 @@ def run_init_screen():
             if DEBUG:
                 st.write(st.session_state.controller.tourney.participants_names)
                 st.write(st.session_state.controller.tourney.to_dict())
-            st.success('Loaded!')
+            st.success(Text.load_success[language])
             # TODO issue: cannot modify a tournament if it is loaded
             uploaded_file = None
         # st.session_state.current_screen = matches_screen
@@ -79,8 +87,9 @@ def run_init_screen():
         col2.button("❌", key=name, on_click=remove_participant, args=(name,))
         
     # Print all participants
-    st.header("Players")
+    st.header(Text.players[language])
     names_df = pd.DataFrame(st.session_state.controller.get_participants_names(), columns=["Name"])
+    # TODO rename "name" column
     names_df.index += 1
     st.table(names_df)
         
@@ -88,12 +97,12 @@ def run_init_screen():
 ### MATCHES SCREEN ##
 #####################
 def run_matches_screen():
-    st.header("Round " + str(st.session_state.controller.get_current_round_number()))
+    st.header(Text.round_space[language] + str(st.session_state.controller.get_current_round_number()))
     def save_tourney():
         tourney_json = st.session_state.controller.save_tourney()
         
-        file_name = "tourney" + get_current_time_formatted() + ".json"
-        st.download_button(label="Download tournament 💾",
+        file_name = "tourney_" + get_current_time_formatted() + ".json"
+        st.download_button(label=Text.download_tourney[language],
                            data=tourney_json,
                            file_name=file_name,
                            mime="text/plain",
@@ -101,18 +110,17 @@ def run_matches_screen():
 
     # Some options: save and manual matches
     col1, col2 = st.columns(2)
-    col1.button("Save tournament", on_click=save_tourney, type='primary')
-    manual_matches = col2.checkbox("Manual matches", disabled=True)
+    col1.button(Text.save_tourney[language], on_click=save_tourney, type='primary')
+    manual_matches = col2.checkbox(Text.manual_matches[language], disabled=True)
 
-    # Show matches
     # Display matches and input for scores
-    # matches = [('aaa','bbb'), ('ccc','ddd'), ('eee','fff')]
-    # TODO join two manual and not manual. The not manual should have disabled selectboxes...
+    # TODO (possible ui feature) join two manual and not manual. The not manual should have disabled selectboxes...
     if not manual_matches:
         matches = st.session_state.controller.get_current_matches()
+        # print table number
         table = 1
         for player1, player2 in matches:
-            st.subheader("Table " + str(table))
+            st.subheader(Text.table_space[language] + str(table))
             table += 1
             match_key = f"{player1} vs {player2}"
             col1, col2, col3 = st.columns([2, 1, 2])
@@ -142,7 +150,7 @@ def run_matches_screen():
 
         feasible_players = [name for name in st.session_state.controller.get_participants_names() if name not in remove_list]
         
-        st.multiselect("Available players:", st.session_state.controller.get_participants_names(), disabled=True, default=feasible_players)
+        st.multiselect(Text.available_players[language], st.session_state.controller.get_participants_names(), disabled=True, default=feasible_players)
 
     # Button to set the result for the match
     def next_round():
@@ -155,25 +163,29 @@ def run_matches_screen():
             if f"{match_key} - 2" in st.session_state:
                 score2 = st.session_state[f"{match_key} - 2"]
             results.append((player1, player2, score1, score2))
-        st.session_state.controller.next_round(results=results)
+        next_round_success = st.session_state.controller.next_round(results=results)
+        if next_round_success:
+            st.success(Text.new_round_success_space[language] + str(st.session_state.controller.get_current_round_number()))
 
     # Button to set the result for the match
     def undo_round():
-        st.session_state.controller.undo_last_round()
+        undo_round_success = st.session_state.controller.undo_last_round()
+        if undo_round_success:
+            st.success(Text.undo_round_space[language] + str(st.session_state.controller.get_current_round_number()+1))
     
     col1, col2 = st.columns(2)
-    col1.button("Finish round and start next 🚀", on_click=next_round, key="send_results")
-    col2.button("Undo round ↩️", on_click=undo_round, key="undo_results")
+    col1.button(':green['+Text.finish_round_next[language]+']', on_click=next_round, key="send_results")
+    col2.button(Text.undo_round[language], on_click=undo_round, key="undo_results")
     def move_to_ranking():
         st.session_state.current_screen = ranking_screen
         
-    st.button("See Ranking 👑", on_click=move_to_ranking)
+    st.button(Text.see_ranking[language], on_click=move_to_ranking)
             
 #####################
 ### RANKING SCREEN ##
 #####################
 def run_ranking_screen():
-    st.header("Round " + str(st.session_state.controller.get_current_round_number()))
+    st.header(Text.round_space[language] + str(st.session_state.controller.get_current_round_number()))
     ranking = st.session_state.controller.get_ranking()
     if len(ranking) <= 3:
         ranking.index += 1 # 1-indexed
@@ -185,7 +197,7 @@ def run_ranking_screen():
     def move_to_matches():
         st.session_state.current_screen = matches_screen
         
-    st.button("Back to matches 🌚", on_click=move_to_matches)
+    st.button(Text.back_to_matches[language], on_click=move_to_matches)
 
 
 #############

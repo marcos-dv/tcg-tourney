@@ -21,10 +21,10 @@ class Controller:
         for p1,p2,s1,s2 in results:
             self.tourney.send_result(p1,p2,s1,s2)
             
-        self.tourney.generate_round()
+        return self.tourney.generate_round()
         
     def undo_last_round(self):
-        self.tourney.undo_last_round()
+        return self.tourney.undo_last_round()
         
     def get_participants_names(self):
         return self.tourney.participants_names

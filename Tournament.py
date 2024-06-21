@@ -65,11 +65,14 @@ class Tournament:
         new_round.roundMatches = [m for m in matches]
         new_round.set_status(RoundStatus.STARTED)
         self.add_round(new_round)
+        return True
         
     def undo_last_round(self):
         if len(self.rounds) > 1:
             del self.rounds[-1]
             self.rounds[-1].status = RoundStatus.STARTED
+            return True
+        return False
     
     def send_result(self, name1, name2, points1, points2):
         found = False
