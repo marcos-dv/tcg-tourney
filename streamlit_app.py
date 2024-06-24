@@ -190,14 +190,13 @@ def run_matches_screen():
 def run_ranking_screen():
     st.header(Text.round_space[language] + str(controller.get_current_round_number()))
     ranking = controller.get_ranking()
+    ranking.columns = [Text.name[language], Text.points[language], Text.wld[language], Text.omp[language], Text.gp[language], Text.ogp[language]]
     if len(ranking) <= 3:
         ranking.index += 1 # 1-indexed
     else:
         ranking_index = ['🥇', '🥈', '🥉'] + list(range(4, len(ranking)+1))
         ranking.index = ranking_index
     st.write(ranking)
-
-    ranking = controller.get_ranking()
 
     st.subheader(Text.dominance_graph[language])
     graph_image = controller.get_dominance_graph_image()

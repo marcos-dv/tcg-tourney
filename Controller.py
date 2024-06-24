@@ -46,7 +46,7 @@ class Controller:
     def get_ranking(self):
         stats = self.tourney.get_stats()
         # Creating a DataFrame from the list of tuples
-        stats_df = pd.DataFrame(stats, columns=['Name', 'Points', 'W-L-D', 'VPO', 'JG', 'JGO'])
+        stats_df = pd.DataFrame(stats, columns=['Name', 'Points', 'W-L-D', 'OMP', 'GP', 'OGP'])
         return stats_df
 
     # to a dict

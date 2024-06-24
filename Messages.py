@@ -41,6 +41,15 @@ players = {english:"Players", spanish:"Participantes"}
 # Others
 see_ranking = {english:"See Ranking 👑", spanish:"Ver clasificación 👑"}
 back_to_matches = {english:"Back to matches 🌚", spanish:"Volver a partidas 🌚"}
+
+# ranking table
+name = {english:"Name", spanish:"Nombre"}
+points = {english:"Points", spanish:"Puntos"}
+wld = {english:"W-L-D", spanish:"G-P-E"}
+omp = {english:"OMP", spanish:"VPO"}
+gp = {english:"GP", spanish:"JG"}
+ogp = {english:"OGP", spanish:"JGO"}
+
 dominance_graph = {english:"Dominance", spanish:"Dominancia"}
 
 
