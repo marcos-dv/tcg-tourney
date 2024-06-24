@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 from Tournament import Tournament
+import Dominance
 
 DEBUG = False
 
@@ -58,3 +59,9 @@ class Controller:
         self.tourney = Tournament.from_dict(td)
         if DEBUG:
             print(self.tourney)
+            
+            
+    def get_dominance_graph_image(self):
+        names, dominance_arcs, draw_arcs = self.tourney.get_dominance()
+        return Dominance.save_dominance_graph(names, dominance_arcs, draw_arcs)
+        

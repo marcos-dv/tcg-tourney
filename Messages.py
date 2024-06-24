@@ -41,6 +41,7 @@ players = {english:"Players", spanish:"Participantes"}
 # Others
 see_ranking = {english:"See Ranking 👑", spanish:"Ver clasificación 👑"}
 back_to_matches = {english:"Back to matches 🌚", spanish:"Volver a partidas 🌚"}
+dominance_graph = {english:"Dominance", spanish:"Dominancia"}
 
 
 

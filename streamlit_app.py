@@ -5,6 +5,7 @@ import Messages as Text
 from Controller import Controller
 from Tournament import Tournament
 from Auxiliar import get_current_time_formatted
+from PIL import Image
 
 init_screen = 1
 matches_screen = 2
@@ -23,8 +24,10 @@ if 'controller' not in st.session_state:
     st.session_state.controller = Controller()
     st.session_state.current_screen = init_screen
 
+controller = st.session_state.controller
+
 if DEBUG:
-    st.write(st.session_state.controller.tourney.to_dict())
+    st.write(controller.tourney.to_dict())
 
 st.title(Text.app_title[language])
 #####################
@@ -34,7 +37,7 @@ def run_init_screen():
     # Add participants button
     def add_participant():
         if name_input:  # Check if the name input is not empty
-            success = st.session_state.controller.add_participant(name_input)
+            success = controller.add_participant(name_input)
             #if success:
             #    st.success(f"Participant '{name_input}' added!")
             #else:
@@ -43,8 +46,8 @@ def run_init_screen():
 
     # Start tourney buttonl
     def launch_tournament():
-        if st.session_state.controller.launch_tourney():
-            st.success(Text.launch_tourney_participants[language] + ", ".join(st.session_state.controller.get_participants_names()))
+        if controller.launch_tourney():
+            st.success(Text.launch_tourney_participants[language] + ", ".join(controller.get_participants_names()))
             st.session_state.current_screen = matches_screen
         else:
             st.error(Text.not_enough_players[language])
@@ -69,26 +72,26 @@ def run_init_screen():
         if uploaded_file.type == "application/json":
             # To read file as string (use uploaded_file.read() or .getvalue() based on your Streamlit version)
             json_tourney = str(uploaded_file.read(), "utf-8")
-            st.session_state.controller.load_tourney(json_tourney)
+            controller.load_tourney(json_tourney)
             if DEBUG:
-                st.write(st.session_state.controller.tourney.participants_names)
-                st.write(st.session_state.controller.tourney.to_dict())
+                st.write(controller.tourney.participants_names)
+                st.write(controller.tourney.to_dict())
             st.success(Text.load_success[language])
             # TODO issue: cannot modify a tournament if it is loaded
             uploaded_file = None
         # st.session_state.current_screen = matches_screen
 
     def remove_participant(name):
-        st.session_state.controller.remove_participant(name)
+        controller.remove_participant(name)
     
-    for name in st.session_state.controller.get_participants_names():
+    for name in controller.get_participants_names():
         col1, col2 = st.columns([3, 1])  # Adjust the ratio to suit your layout needs
         col1.write(name)
         col2.button("❌", key=name, on_click=remove_participant, args=(name,))
         
     # Print all participants
     st.header(Text.players[language])
-    names_df = pd.DataFrame(st.session_state.controller.get_participants_names(), columns=["Name"])
+    names_df = pd.DataFrame(controller.get_participants_names(), columns=["Name"])
     # TODO rename "name" column
     names_df.index += 1
     st.table(names_df)
@@ -97,9 +100,9 @@ def run_init_screen():
 ### MATCHES SCREEN ##
 #####################
 def run_matches_screen():
-    st.header(Text.round_space[language] + str(st.session_state.controller.get_current_round_number()))
+    st.header(Text.round_space[language] + str(controller.get_current_round_number()))
     def save_tourney():
-        tourney_json = st.session_state.controller.save_tourney()
+        tourney_json = controller.save_tourney()
         
         file_name = "tourney_" + get_current_time_formatted() + ".json"
         st.download_button(label=Text.download_tourney[language],
@@ -116,7 +119,7 @@ def run_matches_screen():
     # Display matches and input for scores
     # TODO (possible ui feature) join two manual and not manual. The not manual should have disabled selectboxes...
     if not manual_matches:
-        matches = st.session_state.controller.get_current_matches()
+        matches = controller.get_current_matches()
         # print table number
         table = 1
         for player1, player2 in matches:
@@ -133,10 +136,10 @@ def run_matches_screen():
 
     elif manual_matches:
         remove_list = []
-        for i in range((len(st.session_state.controller.get_available_participants())+1)//2):
+        for i in range((len(controller.get_available_participants())+1)//2):
             col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 2])
             with col1:
-                p1 = st.selectbox("", st.session_state.controller.get_participants_names(), index=None, key=f"match_{i}_player1")
+                p1 = st.selectbox("", controller.get_participants_names(), index=None, key=f"match_{i}_player1")
             with col2:
                 score1 = st.selectbox("", [0, 1, 2], key=f"match_{i}_score1")
             with col3:
@@ -144,18 +147,18 @@ def run_matches_screen():
             with col4:
                 score2 = st.selectbox("", [0, 1, 2], key=f"match_{i}_score2")
             with col5:
-                p2 = st.selectbox("", st.session_state.controller.get_participants_names(), index=None, key=f"match_{i}_player2")
+                p2 = st.selectbox("", controller.get_participants_names(), index=None, key=f"match_{i}_player2")
             remove_list.append(p1)
             remove_list.append(p2)
 
-        feasible_players = [name for name in st.session_state.controller.get_participants_names() if name not in remove_list]
+        feasible_players = [name for name in controller.get_participants_names() if name not in remove_list]
         
-        st.multiselect(Text.available_players[language], st.session_state.controller.get_participants_names(), disabled=True, default=feasible_players)
+        st.multiselect(Text.available_players[language], controller.get_participants_names(), disabled=True, default=feasible_players)
 
     # Button to set the result for the match
     def next_round():
         results = []
-        matches = st.session_state.controller.get_current_matches()
+        matches = controller.get_current_matches()
         for player1, player2 in matches:
             match_key = f"{player1} vs {player2}"
             if f"{match_key} - 1" in st.session_state:
@@ -163,15 +166,15 @@ def run_matches_screen():
             if f"{match_key} - 2" in st.session_state:
                 score2 = st.session_state[f"{match_key} - 2"]
             results.append((player1, player2, score1, score2))
-        next_round_success = st.session_state.controller.next_round(results=results)
+        next_round_success = controller.next_round(results=results)
         if next_round_success:
-            st.success(Text.new_round_success_space[language] + str(st.session_state.controller.get_current_round_number()))
+            st.success(Text.new_round_success_space[language] + str(controller.get_current_round_number()))
 
     # Button to set the result for the match
     def undo_round():
-        undo_round_success = st.session_state.controller.undo_last_round()
+        undo_round_success = controller.undo_last_round()
         if undo_round_success:
-            st.success(Text.undo_round_space[language] + str(st.session_state.controller.get_current_round_number()+1))
+            st.success(Text.undo_round_space[language] + str(controller.get_current_round_number()+1))
     
     col1, col2 = st.columns(2)
     col1.button(':green['+Text.finish_round_next[language]+']', on_click=next_round, key="send_results")
@@ -185,8 +188,8 @@ def run_matches_screen():
 ### RANKING SCREEN ##
 #####################
 def run_ranking_screen():
-    st.header(Text.round_space[language] + str(st.session_state.controller.get_current_round_number()))
-    ranking = st.session_state.controller.get_ranking()
+    st.header(Text.round_space[language] + str(controller.get_current_round_number()))
+    ranking = controller.get_ranking()
     if len(ranking) <= 3:
         ranking.index += 1 # 1-indexed
     else:
@@ -194,11 +197,18 @@ def run_ranking_screen():
         ranking.index = ranking_index
     st.write(ranking)
 
+    ranking = controller.get_ranking()
+
+    st.subheader(Text.dominance_graph[language])
+    graph_image = controller.get_dominance_graph_image()
+    image = Image.open(graph_image)
+    # Display the image
+    st.image(image, caption=None, use_column_width=True)
+
     def move_to_matches():
         st.session_state.current_screen = matches_screen
-        
-    st.button(Text.back_to_matches[language], on_click=move_to_matches)
-
+    st.button(Text.back_to_matches[language], on_click=move_to_matches)    
+    
 
 #############
 ### ACTION ##

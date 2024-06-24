@@ -200,6 +200,24 @@ class Tournament:
         wld = {p:str(win_matches[p]) + '-' + str(loss_matches[p]) + '-' + str(draw_matches[p]) for p in self.participants_names}
         stats_tuples = [(p, match_points[p], wld[p], to_perc(vpo[p]), to_perc(game_win_perc[p]), to_perc(jgo[p])) for p in self.participants_names]
         return sort_tuples_descending(stats_tuples)
+        
+    def get_dominance(self):
+        names = self.participants_names
+        dominant_arcs = []
+        draw_arcs = []
+        # Update personal stats
+        for r in self.rounds:
+            if r.status != RoundStatus.FINISHED:
+                continue
+            for m in r.roundMatches:
+                # update points
+                if m.punctuation1 > m.punctuation2:
+                    dominant_arcs.append((m.player1, m.player2))
+                elif m.punctuation2 > m.punctuation1:
+                    dominant_arcs.append((m.player2, m.player1))
+                else:
+                    draw_arcs.append((m.player1, m.player2))
+        return names, dominant_arcs, draw_arcs
 
     def __str__(self):
         tournament_details = f"Tournament: {self.name}\nParticipants: {[player.name for player in self.participants]}\n"
