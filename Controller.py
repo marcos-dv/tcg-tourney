@@ -13,8 +13,6 @@ class Controller:
         self.tourney.add_participant(name)
         
     def launch_tourney(self, event_name=None):
-        if event_name:
-            self.tourney.set_name(event_name)
         if len(self.tourney.participants_names) == 0:
             return False
         self.tourney.start_tourney()
@@ -31,6 +29,9 @@ class Controller:
         
     def get_event_name(self):
         return self.tourney.get_name()
+
+    def set_event_name(self, event_name):
+        self.tourney.set_name(event_name)
         
     def get_participants_names(self):
         return self.tourney.participants_names

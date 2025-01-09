@@ -49,7 +49,9 @@ def run_init_screen():
 
     # Start tourney buttonl
     def launch_tournament():
-        if controller.launch_tourney(event_name):
+        if event_name:
+            controller.set_event_name(event_name)
+        if controller.launch_tourney():
             st.success(Text.launch_tourney_participants[language] + ", ".join(controller.get_participants_names()))
             st.session_state.current_screen = matches_screen
         else:
