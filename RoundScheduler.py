@@ -1,6 +1,8 @@
 from Player import Player
 from Match import Match
 from Round import Round
+import random
+import time
 
 class RoundScheduler:
     
@@ -19,7 +21,13 @@ class RoundScheduler:
         else:
             self.points = { name:points for (name, wld, points, vpo, jg, jgo) in stats }
 
-        ordered_players = sorted([p.name for p in players], key=lambda x: self.points[x], reverse=True)
+        # Random shuffle people
+        random.seed(time.time())
+
+        # Shuffle the list
+        random_players = [p.name for p in players]
+        random.shuffle(random_players)
+        ordered_players = sorted(random_players, key=lambda x: self.points[x], reverse=True)
         self.players = ordered_players
         # players done
         done = { p:False for p in ordered_players }
