@@ -6,8 +6,9 @@ import time
 
 class RoundScheduler:
     
-    # TODO add random seed
+    # Initialize the RoundScheduler with players, rounds, stats, and an optional seed.
     def __init__(self, players, rounds, stats=None, seed=None):
+        # Initialize the set of opponents for each player based on the given rounds, in order to not rematch players
         opponents = { p.name : set() for p in players }
         for r in rounds:
             for m in r.roundMatches:
@@ -21,7 +22,8 @@ class RoundScheduler:
         else:
             self.points = { name:points for (name, wld, points, vpo, jg, jgo) in stats }
 
-        # Random shuffle people
+        # Set a random seed if provided, else use the current time
+        random.seed(seed if seed is not None else time.time())
         random.seed(time.time())
 
         # Shuffle the list
@@ -35,6 +37,8 @@ class RoundScheduler:
 
         self.found_matches = []
 
+    # Deprecated
+    # Find matches by pairing players sequentially. Adds a "Bye" if players are odd.
     # Match in order, player 1 with player 2, and so on
     @classmethod
     def find_matches_v0(self, players):
@@ -54,6 +58,7 @@ class RoundScheduler:
             i += 2
         return found_matches
 
+    # Deprecated
     @classmethod
     def find_matches_v1(self, players, rounds):
         found_matches = []
@@ -69,19 +74,24 @@ class RoundScheduler:
             i += 2
         return found_matches
 
+    # Recursive backtracking method to find feasible matchings while avoiding repeated opponents
     # TODO version with relax opponents constraint
     def bt(self, i=0):
         n = len(self.players)
         if i >= n:
             return 2*len(self.found_matches) >= n-1 and 2*len(self.found_matches) <= n 
+
         if self.done[self.players[i]]:
             return self.bt(i+1)
+
+        # Finding pair for player i
         for j in range(i+1, n):
-            # already assigned or unfeasible
+            # Skip players who are already matched or have faced each other before
             if self.done[self.players[j]] \
                 or self.players[j] in self.opponents[self.players[i]]:
                 continue
-            # available, match i and j
+
+            # Pair players i and j
             self.done[self.players[i]] = True
             self.done[self.players[j]] = True
             self.found_matches.append((self.players[i], self.players[j]))
@@ -90,15 +100,17 @@ class RoundScheduler:
             # no need to try other combinations
             if ret:
             	return True
-           	# else pop and try another combination...
+
+            # Backtrack: undo the pairing and try another combination
             self.done[self.players[i]] = False
             self.done[self.players[j]] = False
             pop_matches = [m for m in self.found_matches if self.players[i] not in m]
             self.found_matches = pop_matches
             
-        # no pairing found?
+        # Attempt to proceed to the next player if no valid match is found
         return self.bt(i+1)
 
+    # Find matches using backtracking and print the results
     def find_matches(self):
         found = self.bt()
         if not found:
