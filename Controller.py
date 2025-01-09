@@ -12,7 +12,9 @@ class Controller:
     def add_participant(self, name):
         self.tourney.add_participant(name)
         
-    def launch_tourney(self):
+    def launch_tourney(self, event_name=None):
+        if event_name:
+            self.tourney.set_name(event_name)
         if len(self.tourney.participants_names) == 0:
             return False
         self.tourney.start_tourney()
@@ -26,6 +28,9 @@ class Controller:
         
     def undo_last_round(self):
         return self.tourney.undo_last_round()
+        
+    def get_event_name(self):
+        return self.tourney.get_name()
         
     def get_participants_names(self):
         return self.tourney.participants_names

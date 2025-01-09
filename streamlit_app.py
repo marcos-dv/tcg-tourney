@@ -34,6 +34,9 @@ st.title(Text.app_title[language])
 ### INITIAL SCREEN ##
 #####################
 def run_init_screen():
+    # Display the event name
+    event_name = st.text_input(Text.event_name[language], key='event_name')
+
     # Add participants button
     def add_participant():
         if name_input:  # Check if the name input is not empty
@@ -46,7 +49,7 @@ def run_init_screen():
 
     # Start tourney buttonl
     def launch_tournament():
-        if controller.launch_tourney():
+        if controller.launch_tourney(event_name):
             st.success(Text.launch_tourney_participants[language] + ", ".join(controller.get_participants_names()))
             st.session_state.current_screen = matches_screen
         else:
@@ -103,8 +106,8 @@ def run_matches_screen():
     st.header(Text.round_space[language] + str(controller.get_current_round_number()))
     def save_tourney():
         tourney_json = controller.save_tourney()
-        
-        file_name = "tourney_" + get_current_time_formatted() + ".json"
+        event_name = controller.get_event_name().replace(' ', '_')
+        file_name = event_name + "_" + get_current_time_formatted() + ".json"
         st.download_button(label=Text.download_tourney[language],
                            data=tourney_json,
                            file_name=file_name,

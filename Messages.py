@@ -10,6 +10,7 @@ available_languages = [english, spanish]
 app_title = {english:"Tournament Manager", spanish:"Tournament Manager"}
 
 # Tourneys
+event_name = {english:"Event name", spanish:"Nombre del evento"}
 start_tournament = {english:"Start Tournament ⚔️", spanish:"Comenzar torneo ⚔️"}
 launch_tourney_participants = {english:"Tournament with participants: ", spanish:"Torneo con participantes: "}
 not_enough_players = {english:"Not enough participants to start the tournament.", spanish:"No hay suficientes jugadores en el torneo."}

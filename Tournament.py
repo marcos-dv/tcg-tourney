@@ -45,6 +45,12 @@ class Tournament:
         matches_names = [(m.player1, m.player2) for m in cur_matches]
         return matches_names
     
+    def set_name(self, event_name):
+        self.name = event_name
+
+    def get_name(self):
+        return self.name
+    
     def available_participants(self):
         return sum(1 for p in self.participants if p.status == PlayerStatus.PLAYING)
 
