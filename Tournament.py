@@ -1,9 +1,10 @@
 import json
 import copy
-from Player import Player
+from Player import Player, PlayerStatus
 from Round import Round, RoundStatus
 from RoundScheduler import RoundScheduler
 from Match import Match
+from collections import Counter
 
 class TournamentType():
     SWISS = "Swiss"
@@ -79,7 +80,7 @@ class Tournament:
             self.rounds[-1].status = RoundStatus.STARTED
             return True
         return False
-    
+        
     def send_result(self, name1, name2, points1, points2):
         found = False
         for m in self.rounds[-1].roundMatches:
@@ -93,6 +94,40 @@ class Tournament:
                 break
         if not found:
             print(f'Error send_result: in round {len(self.rounds)} the following score was not set: {name1} vs {name2}, {points1} - {points2}\n')
+
+    def send_results(self, results):
+        for p1,p2,s1,s2 in results:
+            self.send_result(p1,p2,s1,s2)
+
+    def check_manual_results(self, results):
+        # Flatten the list of tuples into a single list of strings
+        all_players_playing = [player for tpl in results for player in tpl[:2]]
+
+        # Count occurrences of each string
+        counter = Counter(all_players_playing)
+        duplicates = [string for string, count in counter.items() if count > 1]
+        
+        # No dupps
+        if len(duplicates) == 0:
+            return True
+
+        # Print the number of duplicates and the actual strings
+        print(f"Number of duplicate strings: {len(duplicates)}")
+        print(f"Duplicate strings: {', '.join(duplicates)}")
+        return False
+
+    def send_manual_results(self, results):
+        last_round = self.rounds[-1]
+        self.check_manual_results(results)
+        last_round.roundMatches = [ Match(p1,p2,s1,s2) for p1,p2,s1,s2 in results ]
+        
+    def undo_last_round(self):
+        if len(self.rounds) > 1:
+            del self.rounds[-1]
+            self.rounds[-1].status = RoundStatus.STARTED
+            return True
+        return False
+
             
     # see https://blogs.magicjudges.org/rules/mtr/
     def get_stats(self):

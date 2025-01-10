@@ -18,10 +18,11 @@ class Controller:
         self.tourney.start_tourney()
         return True
 
-    def next_round(self, results):
-        for p1,p2,s1,s2 in results:
-            self.tourney.send_result(p1,p2,s1,s2)
-            
+    def next_round(self, results, manual=False):
+        if manual:
+            self.tourney.send_manual_results(results)
+        else:
+            self.tourney.send_results(results)
         return self.tourney.generate_round()
         
     def undo_last_round(self):

@@ -1,11 +1,11 @@
 from Player import Player, PlayerPunctuation
 
 class Match:
-    def __init__(self, player1, player2):
+    def __init__(self, player1, player2, score1 = None, score2 = None):
         self.player1 = player1
         self.player2 = player2
-        self.punctuation1 = None
-        self.punctuation2 = None
+        self.punctuation1 = score1
+        self.punctuation2 = score2
     
     def set_punctuation(self, score1, score2):
         self.punctuation1 = score1

@@ -119,7 +119,7 @@ def run_matches_screen():
     # Some options: save and manual matches
     col1, col2 = st.columns(2)
     col1.button(Text.save_tourney[language], on_click=save_tourney, type='primary')
-    manual_matches = col2.checkbox(Text.manual_matches[language], disabled=True)
+    manual_matches = col2.checkbox(Text.manual_matches[language], disabled=False)
 
     # Display matches and input for scores
     # TODO (possible ui feature) join two manual and not manual. The not manual should have disabled selectboxes...
@@ -141,18 +141,20 @@ def run_matches_screen():
 
     elif manual_matches:
         remove_list = []
-        for i in range((len(controller.get_available_participants())+1)//2):
+        for i in range(controller.get_available_participants() // 2):
+            table = i+1
+            st.subheader(Text.table_space[language] + str(table))
             col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 2])
             with col1:
-                p1 = st.selectbox("", controller.get_participants_names(), index=None, key=f"match_{i}_player1")
+                p1 = st.selectbox("", controller.get_participants_names(), index=None, key=f"table_{i}_player1")
             with col2:
-                score1 = st.selectbox("", [0, 1, 2], key=f"match_{i}_score1")
+                score1 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score1")
             with col3:
                 st.write("vs")
             with col4:
-                score2 = st.selectbox("", [0, 1, 2], key=f"match_{i}_score2")
+                score2 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score2")
             with col5:
-                p2 = st.selectbox("", controller.get_participants_names(), index=None, key=f"match_{i}_player2")
+                p2 = st.selectbox("", controller.get_participants_names(), index=None, key=f"table_{i}_player2")
             remove_list.append(p1)
             remove_list.append(p2)
 
@@ -163,15 +165,29 @@ def run_matches_screen():
     # Button to set the result for the match
     def next_round():
         results = []
-        matches = controller.get_current_matches()
-        for player1, player2 in matches:
-            match_key = f"{player1} vs {player2}"
-            if f"{match_key} - 1" in st.session_state:
-                score1 = st.session_state[f"{match_key} - 1"]
-            if f"{match_key} - 2" in st.session_state:
-                score2 = st.session_state[f"{match_key} - 2"]
-            results.append((player1, player2, score1, score2))
-        next_round_success = controller.next_round(results=results)
+        player1, player2, score1, score2 =  None, None, None, None
+        if manual_matches:
+            for i in range(controller.get_available_participants() // 2):
+                if f"table_{i}_player1" in st.session_state:
+                    player1 = st.session_state[f"table_{i}_player1"]
+                if f"table_{i}_player2" in st.session_state:
+                    player2 = st.session_state[f"table_{i}_player2"]
+                if f"table_{i}_score1" in st.session_state:
+                    score1 = st.session_state[f"table_{i}_score1"]
+                if f"table_{i}_score2" in st.session_state:
+                    score2 = st.session_state[f"table_{i}_score2"]
+                results.append((player1, player2, score1, score2))
+        else:
+            matches = controller.get_current_matches()
+            for player1, player2 in matches:
+                match_key = f"{player1} vs {player2}"
+                if f"{match_key} - 1" in st.session_state:
+                    score1 = st.session_state[f"{match_key} - 1"]
+                if f"{match_key} - 2" in st.session_state:
+                    score2 = st.session_state[f"{match_key} - 2"]
+                results.append((player1, player2, score1, score2))
+
+        next_round_success = controller.next_round(results=results, manual=manual_matches)
         if next_round_success:
             st.success(Text.new_round_success_space[language] + str(controller.get_current_round_number()))
 
