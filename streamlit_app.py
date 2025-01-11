@@ -105,7 +105,7 @@ def run_init_screen():
 ### MATCHES SCREEN ##
 #####################
 def run_matches_screen():
-    st.header(Text.round_space[language] + str(controller.get_current_round_number()))
+    st.header(Text.round_space[language] + str(controller.get_current_round_number()) + ' - ' + controller.get_event_name())
     def save_tourney():
         tourney_json = controller.save_tourney()
         event_name = controller.get_event_name().replace(' ', '_')
@@ -121,72 +121,48 @@ def run_matches_screen():
     col1.button(Text.save_tourney[language], on_click=save_tourney, type='primary')
     manual_matches = col2.checkbox(Text.manual_matches[language], disabled=False)
 
-    # Display matches and input for scores
-    # TODO (possible ui feature) join two manual and not manual. The not manual should have disabled selectboxes...
-    if not manual_matches:
-        matches = controller.get_current_matches()
-        # print table number
-        table = 1
-        for player1, player2 in matches:
-            st.subheader(Text.table_space[language] + str(table))
-            table += 1
-            match_key = f"{player1} vs {player2}"
-            col1, col2, col3 = st.columns([2, 1, 2])
-            with col1:
-                score1 = st.selectbox(player1, [0, 1, 2], key=f"{match_key} - 1")
-            with col2:
-                st.write(" **vs** ")
-            with col3:
-                score2 = st.selectbox(player2, [0, 1, 2], key=f"{match_key} - 2")
-
-    elif manual_matches:
-        remove_list = []
-        for i in range(controller.get_available_participants() // 2):
-            table = i+1
-            st.subheader(Text.table_space[language] + str(table))
-            col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 2])
-            with col1:
-                p1 = st.selectbox("", controller.get_participants_names(), index=None, key=f"table_{i}_player1")
-            with col2:
-                score1 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score1")
-            with col3:
-                st.write("vs")
-            with col4:
-                score2 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score2")
-            with col5:
-                p2 = st.selectbox("", controller.get_participants_names(), index=None, key=f"table_{i}_player2")
-            remove_list.append(p1)
-            remove_list.append(p2)
-
-        feasible_players = [name for name in controller.get_participants_names() if name not in remove_list]
-        
-        st.multiselect(Text.available_players[language], controller.get_participants_names(), disabled=True, default=feasible_players)
+    matches = controller.get_current_matches()
+    participants = controller.get_participants_names()
+    participants_to_index = {player: index for index, player in enumerate(participants)}
+    table = 1
+    remove_list = []
+    # Bye is skipped this way
+    for i in range(controller.get_available_participants() // 2):
+        player1, player2 = matches[i] # player1 and player2 are just a suggestion. That will be the way when automatic (no-manual) matches
+        st.subheader(Text.table_space[language] + str(table))
+        table += 1
+        col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 2])
+        with col1:
+            p1 = st.selectbox("", participants, index=participants_to_index[player1], disabled=not manual_matches, key=f"table_{i}_player1")
+        with col2:
+            score1 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score1")
+        with col3:
+            st.write("vs")
+        with col4:
+            score2 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score2")
+        with col5:
+            p2 = st.selectbox("", participants, index=participants_to_index[player2], disabled=not manual_matches, key=f"table_{i}_player2")
+        remove_list.append(p1)
+        remove_list.append(p2)
+    
+    if manual_matches:
+        feasible_players = [name for name in participants if name not in remove_list]
+        st.multiselect(Text.available_players[language], participants, disabled=True, default=feasible_players)
 
     # Button to set the result for the match
     def next_round():
         results = []
         player1, player2, score1, score2 =  None, None, None, None
-        if manual_matches:
-            for i in range(controller.get_available_participants() // 2):
-                if f"table_{i}_player1" in st.session_state:
-                    player1 = st.session_state[f"table_{i}_player1"]
-                if f"table_{i}_player2" in st.session_state:
-                    player2 = st.session_state[f"table_{i}_player2"]
-                if f"table_{i}_score1" in st.session_state:
-                    score1 = st.session_state[f"table_{i}_score1"]
-                if f"table_{i}_score2" in st.session_state:
-                    score2 = st.session_state[f"table_{i}_score2"]
-                results.append((player1, player2, score1, score2))
-        else:
-            matches = controller.get_current_matches()
-            for player1, player2 in matches:
-                match_key = f"{player1} vs {player2}"
-                if f"{match_key} - 1" in st.session_state:
-                    score1 = st.session_state[f"{match_key} - 1"]
-                if f"{match_key} - 2" in st.session_state:
-                    score2 = st.session_state[f"{match_key} - 2"]
-                results.append((player1, player2, score1, score2))
-
+        for i in range(controller.get_available_participants() // 2):
+            if f"table_{i}_player1" in st.session_state:
+                player1 = st.session_state[f"table_{i}_player1"]
+            if f"table_{i}_player2" in st.session_state:
+                player2 = st.session_state[f"table_{i}_player2"]
+            if f"table_{i}_score1" in st.session_state:
+                score1 = st.session_state[f"table_{i}_score1"]
+            if f"table_{i}_score2" in st.session_state:
+                score2 = st.session_state[f"table_{i}_score2"]
+            results.append((player1, player2, score1, score2))
         next_round_success = controller.next_round(results=results, manual=manual_matches)
         if next_round_success:
             st.success(Text.new_round_success_space[language] + str(controller.get_current_round_number()))

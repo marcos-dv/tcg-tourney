@@ -20,7 +20,7 @@ class RoundScheduler:
         if stats is None:
             self.points = { p.name : 0 for p in players }
         else:
-            self.points = { name:points for (name, wld, points, vpo, jg, jgo) in stats }
+            self.points = { name:points for (name, points, wld, vpo, jg, jgo) in stats }
 
         # Set a random seed if provided, else use the current time
         random.seed(seed if seed is not None else time.time())

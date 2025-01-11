@@ -145,7 +145,7 @@ class Tournament:
         total_games = {p:0 for p in self.participants_names}
         game_points = {p:0 for p in self.participants_names}
         
-        min_rate = 0.3333
+        min_rate = 0.333333333
         
         finished_rounds = 0
         # Update personal stats
@@ -175,16 +175,18 @@ class Tournament:
                 # update games
                 win_games[m.player1] += m.punctuation1
                 win_games[m.player2] += m.punctuation2
-                total_games[m.player1] += m.punctuation1 + m.punctuation2
-                total_games[m.player2] += m.punctuation1 + m.punctuation2
+                total_games[m.player1] += (m.punctuation1 + m.punctuation2)
+                total_games[m.player2] += (m.punctuation1 + m.punctuation2)
 
                 # detect unfinished games...
-                # TODO is companion doing this!!??
+                # TODO is companion doing this!!?? No...
+                """
                 if m.punctuation1 <= 1 and m.punctuation2 <= 1:
-                    draw_games[m.player1] += 1
+                    draw_games[m.player1] += 1 # How to detect draw-games???
                     draw_games[m.player2] += 1
                     total_games[m.player1] += 1
                     total_games[m.player2] += 1
+                """
                 
         # adjust byes!
         byes = {p:0 for p in self.participants_names}
@@ -199,11 +201,11 @@ class Tournament:
 
         # compute match points
         for p in self.participants_names:
-            match_points[p] = 3*win_matches[p] + draw_matches[p]
+            match_points[p] = 3*win_matches[p] + 1*draw_matches[p]
 
         # compute game points
         for p in self.participants_names:
-            game_points[p] = 3*win_games[p] + draw_games[p]
+            game_points[p] = 3*win_games[p] + 1*draw_games[p]
 
         # TODO when drop is allowed, divide between the number of played rounds by that player!
         match_win_perc = {}
@@ -232,15 +234,21 @@ class Tournament:
 
         from operator import itemgetter
         def sort_tuples_descending(data):
-            sorted_data = sorted(data, key=itemgetter(1, 2, 3, 4), reverse=True)
+            sorted_data = sorted(data, key=lambda x: (x[1], x[3], x[4], x[5]), reverse=True)
             return sorted_data
         
         def to_perc(val):
             return str(format(100*val,".2f")) + '%'
 
         wld = {p:str(win_matches[p]) + '-' + str(loss_matches[p]) + '-' + str(draw_matches[p]) for p in self.participants_names}
-        stats_tuples = [(p, match_points[p], wld[p], to_perc(vpo[p]), to_perc(game_win_perc[p]), to_perc(jgo[p])) for p in self.participants_names]
-        return sort_tuples_descending(stats_tuples)
+        # round to 5 decimals is useful because of comparisons with min_rate
+        decimals = 5
+        stats_tuples = [(p, match_points[p], wld[p], round(vpo[p],decimals), round(game_win_perc[p],decimals), round(jgo[p],decimals)) for p in self.participants_names]
+
+        stats_tuples = sort_tuples_descending(stats_tuples) # sort without strings but numbers
+
+        stats_tuples_perc = [ (p,mp,wld,to_perc(vpo),to_perc(gwp),to_perc(jpo)) for (p, mp, wld, vpo, gwp, jpo) in stats_tuples ]
+        return stats_tuples_perc
         
     def get_dominance(self):
         names = self.participants_names
