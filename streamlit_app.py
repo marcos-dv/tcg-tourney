@@ -15,7 +15,7 @@ DEBUG = False
 language = st.radio(
     "",
     Text.available_languages,
-    index=0,
+    index=1,
     horizontal=True
 )
 
@@ -96,8 +96,7 @@ def run_init_screen():
         
     # Print all participants
     st.header(Text.players[language])
-    names_df = pd.DataFrame(controller.get_participants_names(), columns=["Name"])
-    # TODO rename "name" column
+    names_df = pd.DataFrame(controller.get_participants_names(), columns=[Text.name[language]])
     names_df.index += 1
     st.table(names_df)
         
