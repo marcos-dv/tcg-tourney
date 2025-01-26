@@ -109,9 +109,6 @@ def run_init_screen():
 def run_matches_screen():
     st.header(Text.round_space[language] + str(controller.get_current_round_number()) + ' - ' + controller.get_event_name())
 
-    # Some options: save and manual matches
-    col1, col2 = st.columns(2)
-    # col1.button(Text.save_tourney[language], on_click=save_tourney, type='primary')
     def save_tourney():
         tourney_json = controller.save_tourney()
         event_name = controller.get_event_name().replace(' ', '_')
@@ -122,38 +119,47 @@ def run_matches_screen():
                            mime="text/plain",
                            type='primary')
 
+    # Some options: save and manual matches
+    col1, col2 = st.columns(2)
     save_tourney()
-
     manual_matches = col2.checkbox(Text.manual_matches[language], disabled=False)
 
-    matches = controller.get_current_matches()
-    participants = controller.get_participants_names()
-    participants_to_index = {player: index for index, player in enumerate(participants)}
-    table = 1
-    remove_list = []
-    # Bye is skipped this way
-    for i in range(controller.get_available_participants() // 2):
-        player1, player2 = matches[i] # player1 and player2 are just a suggestion. That will be the way when automatic (no-manual) matches
-        st.subheader(Text.table_space[language] + str(table))
-        table += 1
-        col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 2])
-        with col1:
-            p1 = st.selectbox("", participants, index=participants_to_index[player1], disabled=not manual_matches, key=f"table_{i}_player1")
-        with col2:
-            score1 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score1")
-        with col3:
-            st.write("vs")
-        with col4:
-            score2 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score2")
-        with col5:
-            p2 = st.selectbox("", participants, index=participants_to_index[player2], disabled=not manual_matches, key=f"table_{i}_player2")
-        remove_list.append(p1)
-        remove_list.append(p2)
-    
-    if manual_matches:
-        feasible_players = [name for name in participants if name not in remove_list]
-        st.multiselect(Text.available_players[language], participants, disabled=True, default=feasible_players)
+    # Pairings
+    def display_pairings():
+        matches = controller.get_current_matches()
+        participants = controller.get_participants_names()
+        participants_to_index = {player: index for index, player in enumerate(participants)}
+        table = 1
+        remove_list = []
+        # Bye is skipped this way
+        for i in range(controller.get_available_participants() // 2):
+            if i >= len(matches):
+                st.error(Text.no_available_matches[language])
+                print(controller.print_tournament())
+                return
+            player1, player2 = matches[i] # player1 and player2 are just a suggestion. That will be the way when automatic (no-manual) matches
+            st.subheader(Text.table_space[language] + str(table))
+            table += 1
+            col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 2])
+            with col1:
+                p1 = st.selectbox("", participants, index=participants_to_index[player1], disabled=not manual_matches, key=f"table_{i}_player1")
+            with col2:
+                score1 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score1")
+            with col3:
+                st.write("vs")
+            with col4:
+                score2 = st.selectbox("", [0, 1, 2], key=f"table_{i}_score2")
+            with col5:
+                p2 = st.selectbox("", participants, index=participants_to_index[player2], disabled=not manual_matches, key=f"table_{i}_player2")
+            remove_list.append(p1)
+            remove_list.append(p2)
+        
+        if manual_matches:
+            feasible_players = [name for name in participants if name not in remove_list]
+            st.multiselect(Text.available_players[language], participants, disabled=True, default=feasible_players)
 
+    display_pairings()
+    
     # Button to set the result for the match
     def next_round():
         results = []

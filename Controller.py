@@ -72,3 +72,6 @@ class Controller:
         names, dominance_arcs, draw_arcs = self.tourney.get_dominance()
         return Dominance.save_dominance_graph(names, dominance_arcs, draw_arcs)
         
+    def print_tournament(self):
+        return str(self.tourney)
+        

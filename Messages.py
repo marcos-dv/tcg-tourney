@@ -21,7 +21,7 @@ add_player = {english:"Add Participant", spanish:"Nuevo participante"}
 load_tournament = {english:"Load Tournament", spanish:"Cargar torneo"}
 load_success = {english:"Loaded!", spanish:"Torneo cargado!"}
 
-download_tourney = {english:"Download tournament 💾", spanish:"Descargar torneo 💾"}
+# download_tourney = {english:"Download tournament 💾", spanish:"Descargar torneo 💾"}
 save_tourney = {english:"Save tournament 💾", spanish:"Guardar torneo 💾"}
 
 # Rounds
@@ -34,6 +34,7 @@ undo_round_space = {english:"Undo round ", spanish:"Eliminada ronda "}
 # Matches
 manual_matches = {english:"Edit manual matches", spanish:"Editar rondas manuales"}
 table_space = {english:"Table ", spanish:"Mesa "}
+no_available_matches = {english:"No available matches!", spanish:"No hay emparejamientos disponibles!"}
 
 # Players
 available_players = {english:"Available players", spanish:"Jugadores disponibles"}
