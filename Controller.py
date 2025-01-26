@@ -48,7 +48,7 @@ class Controller:
         return self.tourney.get_current_round_number()
         
     def get_available_participants(self):
-        return self.tourney.available_participants()
+        return self.tourney.num_available_participants()
 
     def get_ranking(self):
         stats = self.tourney.get_stats()

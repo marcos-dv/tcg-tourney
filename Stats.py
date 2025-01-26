@@ -61,6 +61,7 @@ def compute_stats(participants_names, rounds):
     # adjust byes!
     byes = {p:0 for p in participants_names}
     for p in participants_names:
+        # TODO update for dropped and hot insertions (maybe just give byes to hot insertions...)
         byes[p] = finished_rounds - total_matches[p]
         if byes[p] >= 1:
             win_matches[p] += byes[p]

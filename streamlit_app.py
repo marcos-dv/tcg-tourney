@@ -156,7 +156,7 @@ def run_matches_screen():
         
         if manual_matches:
             feasible_players = [name for name in participants if name not in remove_list]
-            st.multiselect(Text.available_players[language], participants, disabled=True, default=feasible_players)
+            st.multiselect(Text.available_players[language], participants, placeholder="", disabled=True, default=feasible_players)
 
     display_pairings()
     

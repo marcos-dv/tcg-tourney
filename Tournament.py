@@ -1,5 +1,6 @@
 import json
 import copy
+import time
 from Player import Player, PlayerStatus
 from Round import Round, RoundStatus
 from PairingScheduler import PairingScheduler
@@ -17,9 +18,12 @@ class Tournament:
     def __init__(self, name):
         self.name = name
         self.rounds = []
-        self.participants = []
+        self.participants = {} # name : Player object
         self.participants_names = []
         self.type = TournamentType.SWISS
+        self.hot_insertions = {} # name : round when it was introduced
+        self.drops = {} # name : last played round
+        self.seed = time.time() # name : last played round
     
     def add_round(self, round):
         self.rounds.append(round)
@@ -28,12 +32,23 @@ class Tournament:
         if name in self.participants_names:
             return False
         self.participants_names.append(name)
-        self.participants.append(Player(name))
+        self.participants[name] = Player(name)
         return True
+
+    def add_hot_participant(self, name):
+        if name in self.participants_names:
+            return False
+        self.participants_names.append(name)
+        self.participants[name] = Player(name)
+        self.hot_insertions[name] = self.get_current_round_number()
+        return True
+
+    def drop_participant(self, name):
+        self.drops[name] = self.get_current_round_number()
 
     def remove_participant(self, name):
         self.participants_names.remove(name)
-        new_part = [p for p in self.participants if p.name != name]
+        new_part = { p.name : p for p in self.participants.values() if p.name != name }
         self.participants = new_part
         #print(*self.participants)
         #print(*self.participants_names)
@@ -53,8 +68,12 @@ class Tournament:
     def get_name(self):
         return self.name
     
-    def available_participants(self):
-        return sum(1 for p in self.participants if p.status == PlayerStatus.PLAYING)
+    def num_available_participants(self):
+        return sum(1 for p in self.participants.values() if p.status == PlayerStatus.PLAYING)
+
+    def get_active_players(self):
+        # dropped players in this round are considered active in the current round
+        return [p for p in self.participants.values() if p.status == PlayerStatus.PLAYING or self.drops[p] < self.get_current_round_number()]
 
     def start_tourney(self):
         if len(self.rounds) == 0:
@@ -63,22 +82,54 @@ class Tournament:
     def get_current_round_number(self):
         return len(self.rounds)
 
+    def drop_players(self):
+        for name,round_number in self.drops.items():
+            if round_number == self.get_current_round_number():
+                self.participants[name].update_status(PlayerStatus.DROPPED)
+        
     def generate_round(self):
+        # 1. Finish round
         if len(self.rounds) > 0:
             self.rounds[-1].status = RoundStatus.FINISHED
+        # 2. Drop players
+        self.drop_players()
+
         # TODO check type of tourney, swiss, etc
+        # 3. Generate new pairings
         stats = self.get_stats() if len(self.rounds) > 0 else None
-        matches = PairingScheduler(self.participants, self.rounds, stats).find_matches()
+        scheduler = PairingScheduler(self.get_active_players(), self.rounds, stats, self.seed)
+        matches = scheduler.find_matches()
         new_round = Round()
         new_round.roundMatches = [m for m in matches]
         new_round.set_status(RoundStatus.STARTED)
+        # 4. New round available
         self.add_round(new_round)
         return True
         
+    def undo_hot_insertions(self):
+        current_round = self.get_current_round_number()
+        to_delete_players = [name for name, round_number in self.hot_insertions.items() if round_number == current_round]
+        for name in to_delete_players:
+            self.participants_names.remove(name)
+            self.participants.pop(name)
+            self.hot_insertions.pop(name)
+        
+    def undo_drops(self):
+        current_round = self.get_current_round_number()
+        to_restore_players = [name for name, round_number in self.drops.items() if round_number == current_round]
+        for name in to_restore_players:
+            self.participants[name].update_status(PlayerStatus.PLAYING)
+            self.drops.pop(name)
+
     def undo_last_round(self):
+        # undoing round "len(self.rounds)"
         if len(self.rounds) > 1:
+            # hot insertions are for incumbent round
+            self.undo_hot_insertions()
             del self.rounds[-1]
             self.rounds[-1].status = RoundStatus.STARTED
+            # drops are from previous round
+            self.undo_drops()
             return True
         return False
         
@@ -121,13 +172,6 @@ class Tournament:
         last_round = self.rounds[-1]
         self.check_manual_results(results)
         last_round.roundMatches = [ Match(p1,p2,s1,s2) for p1,p2,s1,s2 in results ]
-        
-    def undo_last_round(self):
-        if len(self.rounds) > 1:
-            del self.rounds[-1]
-            self.rounds[-1].status = RoundStatus.STARTED
-            return True
-        return False
 
     def get_stats(self):
         return compute_stats(self.participants_names, self.rounds)
@@ -136,7 +180,7 @@ class Tournament:
         return compute_dominance(self.participants_names, self.rounds)        
 
     def __str__(self):
-        tournament_details = f"Tournament: {self.name}\nParticipants: {[player.name for player in self.participants]}\n"
+        tournament_details = f"Tournament: {self.name}\nParticipants: {[player.name for player in self.participants.values()]}\n"
         for i, round in enumerate(self.rounds, start=1):
             tournament_details += f"\nRound {i} - Status: {round.status}\n{round}\n"
         return tournament_details
@@ -145,7 +189,7 @@ class Tournament:
         tourney_dict = {
             'name' : self.name, 
             'rounds' : [r.to_dict() for r in self.rounds],
-            'participants' : [p.to_dict() for p in self.participants],
+            'participants' : [p.to_dict() for p in self.participants.values()],
             'type' : self.type
         }
         return tourney_dict
@@ -157,7 +201,8 @@ class Tournament:
     def from_dict(cls, td):
         t = cls(td['name'])
         t.rounds = [Round.from_dict(r) for r in td['rounds']]
-        t.participants = [Player.from_dict(p) for p in td['participants']]
-        t.participants_names = [p.name for p in t.participants]
+        participants_list = [Player.from_dict(p) for p in td['participants']]
+        t.participants = { p.name : p for p in participants_list }
+        t.participants_names = [p.name for p in participants_list]
         t.type = td['type']
         return t

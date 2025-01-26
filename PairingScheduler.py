@@ -23,8 +23,9 @@ class PairingScheduler:
             self.points = { name:points for (name, points, wld, vpo, jg, jgo) in stats }
 
         # Set a random seed if provided, else use the current time
-        random.seed(seed if seed is not None else time.time())
-        random.seed(time.time())
+        if seed == None:
+            seed = time.time()
+        random.seed(seed + len(rounds))
 
         # Shuffle the list
         random_players = [p.name for p in players]
