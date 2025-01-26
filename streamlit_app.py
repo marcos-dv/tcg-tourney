@@ -29,7 +29,9 @@ controller = st.session_state.controller
 if DEBUG:
     st.write(controller.tourney.to_dict())
 
-st.title(Text.app_title[language])
+def display_zero():
+    st.title(Text.app_title[language])
+
 #####################
 ### INITIAL SCREEN ##
 #####################
@@ -58,7 +60,8 @@ def run_init_screen():
             st.error(Text.not_enough_players[language])
 
     name_input = st.text_input(Text.enter_player_name[language], key='name')
-
+    if name_input: # allows insertion by "Enter"
+        controller.add_participant(name_input)
     col1, col2, col3 = st.columns(3)
     col1.button(':blue['+Text.add_player[language]+']', on_click=add_participant)
     col2.button(':orange['+Text.start_tournament[language]+']', on_click=launch_tournament)
@@ -105,19 +108,22 @@ def run_init_screen():
 #####################
 def run_matches_screen():
     st.header(Text.round_space[language] + str(controller.get_current_round_number()) + ' - ' + controller.get_event_name())
+
+    # Some options: save and manual matches
+    col1, col2 = st.columns(2)
+    # col1.button(Text.save_tourney[language], on_click=save_tourney, type='primary')
     def save_tourney():
         tourney_json = controller.save_tourney()
         event_name = controller.get_event_name().replace(' ', '_')
         file_name = event_name + "_" + get_current_time_formatted() + ".json"
-        st.download_button(label=Text.download_tourney[language],
+        st.download_button(label=Text.save_tourney[language],
                            data=tourney_json,
                            file_name=file_name,
                            mime="text/plain",
                            type='primary')
 
-    # Some options: save and manual matches
-    col1, col2 = st.columns(2)
-    col1.button(Text.save_tourney[language], on_click=save_tourney, type='primary')
+    save_tourney()
+
     manual_matches = col2.checkbox(Text.manual_matches[language], disabled=False)
 
     matches = controller.get_current_matches()
@@ -208,6 +214,7 @@ def run_ranking_screen():
 #############
 ### ACTION ##
 #############
+display_zero()
 if st.session_state.current_screen == init_screen:
     run_init_screen()
 elif st.session_state.current_screen == matches_screen:

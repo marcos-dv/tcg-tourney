@@ -22,7 +22,7 @@ load_tournament = {english:"Load Tournament", spanish:"Cargar torneo"}
 load_success = {english:"Loaded!", spanish:"Torneo cargado!"}
 
 download_tourney = {english:"Download tournament 💾", spanish:"Descargar torneo 💾"}
-save_tourney = {english:"Save tournament", spanish:"Guardar torneo"}
+save_tourney = {english:"Save tournament 💾", spanish:"Guardar torneo 💾"}
 
 # Rounds
 finish_round_next = {english:"Finish round and start next 🚀", spanish:"Terminar ronda y comenzar siguiente 🚀"}
