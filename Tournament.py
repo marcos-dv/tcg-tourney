@@ -35,17 +35,6 @@ class Tournament:
         self.participants[name] = Player(name)
         return True
 
-    def add_hot_participant(self, name):
-        if name in self.participants_names:
-            return False
-        self.participants_names.append(name)
-        self.participants[name] = Player(name)
-        self.hot_insertions[name] = self.get_current_round_number()
-        return True
-
-    def drop_participant(self, name):
-        self.drops[name] = self.get_current_round_number()
-
     def remove_participant(self, name):
         self.participants_names.remove(name)
         new_part = { p.name : p for p in self.participants.values() if p.name != name }
@@ -72,8 +61,7 @@ class Tournament:
         return sum(1 for p in self.participants.values() if p.status == PlayerStatus.PLAYING)
 
     def get_active_players(self):
-        # dropped players in this round are considered active in the current round
-        return [p for p in self.participants.values() if p.status == PlayerStatus.PLAYING or self.drops[p] < self.get_current_round_number()]
+        return [p for p in self.participants.values() if p.status == PlayerStatus.PLAYING]
 
     def start_tourney(self):
         if len(self.rounds) == 0:
@@ -81,6 +69,44 @@ class Tournament:
 
     def get_current_round_number(self):
         return len(self.rounds)
+
+    # set at the beginning of a round after match-making
+    def search_and_set_round_bye(self, r, done):
+        active_players_names = [ p.name for p in self.get_active_players()]
+        bye_name = ""
+        for name in active_players_names:
+            if not done[name]:
+                bye_name = name
+                break
+        r.set_bye(bye_name)
+
+    # match with bye player or become the bye
+    def update_matches_with_hot_player(self, name):
+        cur_round = self.rounds[-1]
+        bye_name = cur_round.get_bye()
+        if bye_name is not None and bye_name != "":
+            cur_round.roundMatches.append(Match(bye_name, name))
+            cur_round.set_bye("")
+            print("DIN DIN DIN DIN DIN DIN")
+            print("DIN DIN DIN DIN DIN DIN")
+            print("DIN DIN DIN DIN DIN DIN")
+        else:
+            cur_round.set_bye(name)
+
+    def add_hot_participant(self, name):
+        if name in self.participants_names:
+            return False
+        self.participants_names.append(name)
+        self.participants[name] = Player(name)
+        self.hot_insertions[name] = self.get_current_round_number()
+        self.update_matches_with_hot_player(name)
+        return True
+
+    def drop_participant(self, name):
+        if self.participants[name].status != PlayerStatus.DROPPED:
+            self.drops[name] = self.get_current_round_number()
+        else:
+            print('Trying to drop a dropped player... ' + name)
 
     def drop_players(self):
         for name,round_number in self.drops.items():
@@ -97,10 +123,12 @@ class Tournament:
         # TODO check type of tourney, swiss, etc
         # 3. Generate new pairings
         stats = self.get_stats() if len(self.rounds) > 0 else None
-        scheduler = PairingScheduler(self.get_active_players(), self.rounds, stats, self.seed)
-        matches = scheduler.find_matches()
+        scheduler = PairingScheduler(self.participants.values(), self.get_active_players(), self.rounds, stats, self.seed)
+        matches, done = scheduler.find_matches()
         new_round = Round()
         new_round.roundMatches = [m for m in matches]
+        # search for bye
+        self.search_and_set_round_bye(new_round, done)
         new_round.set_status(RoundStatus.STARTED)
         # 4. New round available
         self.add_round(new_round)
@@ -174,7 +202,7 @@ class Tournament:
         last_round.roundMatches = [ Match(p1,p2,s1,s2) for p1,p2,s1,s2 in results ]
 
     def get_stats(self):
-        return compute_stats(self.participants_names, self.rounds)
+        return compute_stats(self.participants_names, self.rounds, self.drops, self.hot_insertions)
         
     def get_dominance(self):
         return compute_dominance(self.participants_names, self.rounds)        
@@ -190,7 +218,10 @@ class Tournament:
             'name' : self.name, 
             'rounds' : [r.to_dict() for r in self.rounds],
             'participants' : [p.to_dict() for p in self.participants.values()],
-            'type' : self.type
+            'drops' : self.drops,
+            'hot_insertions' : self.hot_insertions,
+            'type' : self.type,
+            'seed' : self.seed
         }
         return tourney_dict
 
@@ -204,5 +235,8 @@ class Tournament:
         participants_list = [Player.from_dict(p) for p in td['participants']]
         t.participants = { p.name : p for p in participants_list }
         t.participants_names = [p.name for p in participants_list]
+        t.drops = td['drops']
+        t.hot_insertions = td['hot_insertions']
         t.type = td['type']
+        t.seed = td['seed']
         return t

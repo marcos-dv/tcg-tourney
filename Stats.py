@@ -3,7 +3,7 @@ from Round import Round, RoundStatus
 from Player import Player, PlayerStatus
 
 # see https://blogs.magicjudges.org/rules/mtr/
-def compute_stats(participants_names, rounds):
+def compute_stats(participants_names, rounds, drops, hot_insertions):
     # opponents
     opponents = { p : set() for p in participants_names }
     # by match
@@ -61,8 +61,14 @@ def compute_stats(participants_names, rounds):
     # adjust byes!
     byes = {p:0 for p in participants_names}
     for p in participants_names:
-        # TODO update for dropped and hot insertions (maybe just give byes to hot insertions...)
         byes[p] = finished_rounds - total_matches[p]
+
+        # byes number can be shifted because of hot_insertions or drops...
+        if p in hot_insertions and hot_insertions[p] > 1:
+            byes[p] -= hot_insertions[p] + 1
+        if p in drops and drops[p] < finished_rounds:
+            byes[p] -= finished_rounds-drops[p]
+
         if byes[p] >= 1:
             win_matches[p] += byes[p]
             total_matches[p] += byes[p]

@@ -7,7 +7,8 @@ import time
 class PairingScheduler:
     
     # Initialize the PairingScheduler with players, rounds, stats, and an optional seed.
-    def __init__(self, players, rounds, stats=None, seed=None):
+    # Players contains also dropped players that should not be used
+    def __init__(self, players, active_players, rounds, stats=None, seed=None):
         # Initialize the set of opponents for each player based on the given rounds, in order to not rematch players
         opponents = { p.name : set() for p in players }
         for r in rounds:
@@ -28,7 +29,7 @@ class PairingScheduler:
         random.seed(seed + len(rounds))
 
         # Shuffle the list
-        random_players = [p.name for p in players]
+        random_players = [p.name for p in active_players]
         random.shuffle(random_players)
         ordered_players = sorted(random_players, key=lambda x: self.points[x], reverse=True)
         self.players = ordered_players
@@ -117,5 +118,5 @@ class PairingScheduler:
         if not found:
             print('Critical error: no feasible matchings were found')
         print('There are ', len(self.found_matches), ' matches and ', len(self.players), ' players')
-        return [ Match(p1, p2) for p1, p2 in self.found_matches ]
+        return [ Match(p1, p2) for p1, p2 in self.found_matches ], self.done
 

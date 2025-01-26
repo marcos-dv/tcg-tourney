@@ -62,6 +62,7 @@ def run_init_screen():
     name_input = st.text_input(Text.enter_player_name[language], key='name')
     if name_input: # allows insertion by "Enter"
         controller.add_participant(name_input)
+        
     col1, col2, col3 = st.columns(3)
     col1.button(':blue['+Text.add_player[language]+']', on_click=add_participant)
     col2.button(':orange['+Text.start_tournament[language]+']', on_click=launch_tournament)
@@ -80,13 +81,16 @@ def run_init_screen():
         if uploaded_file.type == "application/json":
             # To read file as string (use uploaded_file.read() or .getvalue() based on your Streamlit version)
             json_tourney = str(uploaded_file.read(), "utf-8")
-            controller.load_tourney(json_tourney)
+            load_success = controller.load_tourney(json_tourney)
             if DEBUG:
                 st.write(controller.tourney.participants_names)
                 st.write(controller.tourney.to_dict())
             st.success(Text.load_success[language])
-            # TODO issue: cannot modify a tournament if it is loaded
             uploaded_file = None
+            # go to matches if we are already in second round
+            if load_success and controller.get_current_round_number() >= 2:
+                st.session_state.current_screen = matches_screen
+                st.rerun()
         # st.session_state.current_screen = matches_screen
 
     def remove_participant(name):
@@ -191,7 +195,22 @@ def run_matches_screen():
         st.session_state.current_screen = ranking_screen
         
     st.button(Text.see_ranking[language], on_click=move_to_ranking)
-            
+
+    dplayer = st.selectbox("Drop this player?", [""]+controller.get_participants_names(), key="drop")
+    if dplayer != "":
+        st.error("Do you really, really, wanna drop " + dplayer + "?")
+        if st.button("Yes, drop " + dplayer):
+            controller.drop(dplayer)
+
+    hot_insertions = st.checkbox("Hot insertions?", disabled=False, value=False)
+    if hot_insertions:
+        hplayer = st.text_input("Hot insertion? ", key='hot_insertion')
+        def hot_insertion():
+            if hplayer:
+                controller.hot_insertion(hplayer)
+                st.session_state.hot_insertion = ''
+        st.button("Add player", on_click=hot_insertion)
+                
 #####################
 ### RANKING SCREEN ##
 #####################

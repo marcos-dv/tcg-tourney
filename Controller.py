@@ -50,6 +50,12 @@ class Controller:
     def get_available_participants(self):
         return self.tourney.num_available_participants()
 
+    def drop(self, name):
+        return self.tourney.drop_participant(name)
+
+    def hot_insertion(self, name):
+        return self.tourney.add_hot_participant(name)
+
     def get_ranking(self):
         stats = self.tourney.get_stats()
         # Creating a DataFrame from the list of tuples
@@ -61,11 +67,13 @@ class Controller:
         return self.tourney.to_json()
 
     # from a dict
+    # ret false case
     def load_tourney(self, tourney_json):
         td = json.loads(tourney_json)
         self.tourney = Tournament.from_dict(td)
         if DEBUG:
             print(self.tourney)
+        return True
             
             
     def get_dominance_graph_image(self):
