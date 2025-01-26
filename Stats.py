@@ -125,7 +125,7 @@ def compute_dominance(names, rounds):
     dominant_arcs = []
     draw_arcs = []
     # Update personal stats
-    for r in self.rounds:
+    for r in rounds:
         if r.status != RoundStatus.FINISHED:
            continue
         for m in r.roundMatches:
