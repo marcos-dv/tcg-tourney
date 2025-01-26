@@ -1,4 +1,4 @@
-from Player import Player, PlayerPunctuation
+from Player import Player
 
 class Match:
     def __init__(self, player1, player2, score1 = None, score2 = None):
@@ -11,30 +11,6 @@ class Match:
         self.punctuation1 = score1
         self.punctuation2 = score2
         
-        # TODO this logic should go out of here...
-        
-        # update players stats
-        # update games
-        """
-        self.player1.punctuation.total_games += score1 + score2
-        self.player2.punctuation.total_games += score1 + score2
-
-        self.player1.punctuation.games_won += score1
-        self.player2.punctuation.games_won += score2
-
-        # update matches
-        self.player1.punctuation.total_matches += 1
-        self.player2.punctuation.total_matches += 1        
-        if score1 > score2:
-            self.player1.punctuation.wins += 1
-            self.player2.punctuation.losses += 1
-        elif score2 > score1:
-            self.player2.punctuation.wins += 1
-            self.player1.punctuation.losses += 1
-        else: # score1 == score2
-            self.player1.punctuation.ties += 1
-            self.player2.punctuation.ties += 1
-        """
         
     def __str__(self):
         return f"{self.player1} vs {self.player2} - Scores: {self.punctuation1}, {self.punctuation2}"
