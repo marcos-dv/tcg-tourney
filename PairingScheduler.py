@@ -4,9 +4,9 @@ from Round import Round
 import random
 import time
 
-class RoundScheduler:
+class PairingScheduler:
     
-    # Initialize the RoundScheduler with players, rounds, stats, and an optional seed.
+    # Initialize the PairingScheduler with players, rounds, stats, and an optional seed.
     def __init__(self, players, rounds, stats=None, seed=None):
         # Initialize the set of opponents for each player based on the given rounds, in order to not rematch players
         opponents = { p.name : set() for p in players }

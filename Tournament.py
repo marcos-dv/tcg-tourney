@@ -2,7 +2,7 @@ import json
 import copy
 from Player import Player, PlayerStatus
 from Round import Round, RoundStatus
-from RoundScheduler import RoundScheduler
+from PairingScheduler import PairingScheduler
 from Match import Match
 from collections import Counter
 from Stats import compute_stats, compute_dominance
@@ -68,7 +68,7 @@ class Tournament:
             self.rounds[-1].status = RoundStatus.FINISHED
         # TODO check type of tourney, swiss, etc
         stats = self.get_stats() if len(self.rounds) > 0 else None
-        matches = RoundScheduler(self.participants, self.rounds, stats).find_matches()
+        matches = PairingScheduler(self.participants, self.rounds, stats).find_matches()
         new_round = Round()
         new_round.roundMatches = [m for m in matches]
         new_round.set_status(RoundStatus.STARTED)
