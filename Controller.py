@@ -8,6 +8,13 @@ DEBUG = False
 class Controller:
     def __init__(self):
         self.tourney = Tournament('Default tourney')
+        self.lang = None
+
+    def get_lang(self):
+        return self.lang
+
+    def set_lang(self, language):
+        self.lang = language
 
     def add_participant(self, name):
         self.tourney.add_participant(name)
