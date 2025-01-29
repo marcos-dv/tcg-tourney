@@ -2,6 +2,7 @@ from Match import Match
 from Round import Round, RoundStatus
 from Player import Player, PlayerStatus
 
+# This can be cached
 # see https://blogs.magicjudges.org/rules/mtr/
 def compute_stats(participants_names, rounds, drops, hot_insertions):
     # opponents

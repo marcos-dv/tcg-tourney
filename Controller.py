@@ -85,7 +85,9 @@ class Controller:
             
     def get_dominance_graph_image(self):
         names, dominance_arcs, draw_arcs = self.tourney.get_dominance()
-        return Dominance.save_dominance_graph(names, dominance_arcs, draw_arcs)
+        stats = self.tourney.get_stats()
+        stats_df = pd.DataFrame(stats, columns=['Name', 'Points', 'W-L-D', 'OMP', 'GP', 'OGP'])
+        return Dominance.save_dominance_graph(names, dominance_arcs, draw_arcs, stats_df)
         
     def print_tournament(self):
         return str(self.tourney)
