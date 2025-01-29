@@ -16,7 +16,7 @@ launch_tourney_participants = {english:"Tournament with participants: ", spanish
 not_enough_players = {english:"Not enough participants to start the tournament.", spanish:"No hay suficientes jugadores en el torneo."}
 
 enter_player_name = {english:"Enter participant's name", spanish:"Introduce nombre del participante"}
-add_player = {english:"Add Participant", spanish:"Nuevo participante"}
+add_player = {english:"Add player", spanish:"Nuevo jugador"}
 
 load_tournament = {english:"Load Tournament", spanish:"Cargar torneo"}
 load_success = {english:"Loaded!", spanish:"Torneo cargado!"}
@@ -39,6 +39,13 @@ no_available_matches = {english:"No available matches!", spanish:"No hay emparej
 # Players
 available_players = {english:"Available players", spanish:"Jugadores disponibles"}
 players = {english:"Players", spanish:"Participantes"}
+
+# Advanced options
+advanced_options = {english:"Advanced config", spanish:"Opciones avanzadas"}
+drop = {english:"Drop this player?", spanish:"Retirar del torneo a este jugador?"}
+drop_ack = {english:"Do you really, really, wanna drop ", spanish:"Realmente quieres retirar a "}
+drop_yes = {english:"Yes, drop ", spanish:"Retirar "}
+hot_insertion = {english:"Hot insertion?", spanish:"Nuevo jugador?"}
 
 # Others
 see_ranking = {english:"See Ranking 👑", spanish:"Ver clasificación 👑"}

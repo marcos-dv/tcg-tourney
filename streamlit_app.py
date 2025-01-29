@@ -117,7 +117,7 @@ def run_matches_screen():
         tourney_json = controller.save_tourney()
         event_name = controller.get_event_name().replace(' ', '_')
         file_name = event_name + "_" + get_current_time_formatted() + ".json"
-        st.download_button(label=Text.save_tourney[language],
+        col1.download_button(label=Text.save_tourney[language],
                            data=tourney_json,
                            file_name=file_name,
                            mime="text/plain",
@@ -196,20 +196,21 @@ def run_matches_screen():
         
     st.button(Text.see_ranking[language], on_click=move_to_ranking)
 
-    dplayer = st.selectbox("Drop this player?", [""]+controller.get_participants_names(), key="drop")
-    if dplayer != "":
-        st.error("Do you really, really, wanna drop " + dplayer + "?")
-        if st.button("Yes, drop " + dplayer):
-            controller.drop(dplayer)
+    advanced_options = st.checkbox(Text.advanced_options[language], value=False)
 
-    hot_insertions = st.checkbox("Hot insertions?", disabled=False, value=False)
-    if hot_insertions:
-        hplayer = st.text_input("Hot insertion? ", key='hot_insertion')
+    if advanced_options:
+        dplayer = st.selectbox(Text.drop[language], [""]+controller.get_participants_names(), key="drop")
+        if dplayer != "":
+            st.error(Text.drop_ack[language] + dplayer + "?")
+            if st.button(Text.drop_yes[language] + dplayer):
+                controller.drop(dplayer)
+
+        hplayer = st.text_input(Text.hot_insertion[language], key='hot_insertion')
         def hot_insertion():
             if hplayer:
                 controller.hot_insertion(hplayer)
                 st.session_state.hot_insertion = ''
-        st.button("Add player", on_click=hot_insertion)
+        st.button(Text.add_player[language], on_click=hot_insertion)
                 
 #####################
 ### RANKING SCREEN ##
