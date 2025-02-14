@@ -1,5 +1,4 @@
 Visit https://tcg-tourney.streamlit.app/
 
 Wish list:
--Hot insertion of players and drops
--Allow tournament types (elimination, drafts...)
+-Allow different tournaments: single-double elimination, draft and pods
