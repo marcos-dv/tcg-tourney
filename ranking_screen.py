@@ -21,7 +21,7 @@ def run_ranking_screen(controller):
     graph_image = controller.get_dominance_graph_image()
     image = Image.open(graph_image)
     # Display the image
-    st.image(image, caption=None, use_column_width=True)
+    st.image(image, caption=Text.dominance_explanation[language])
 
     def move_to_matches():
         st.session_state.current_screen = matches_screen

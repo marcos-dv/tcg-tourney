@@ -60,8 +60,6 @@ gp = {english:"GP", spanish:"JG"}
 ogp = {english:"OGP", spanish:"JGO"}
 
 dominance_graph = {english:"Dominance", spanish:"Dominancia"}
-
-
-
+dominance_explanation = {english:"Dominance Graph: arcs point to defeated opponents. Gray arcs represent draws.", spanish:"Grafo de dominancia: los arcos apuntan a los oponentes derrotados. Los arcos grises representan empates."}
 
 

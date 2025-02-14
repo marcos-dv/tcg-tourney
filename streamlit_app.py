@@ -32,7 +32,7 @@ if DEBUG:
     st.write(controller.tourney.to_dict())
 
 def display_zero():
-    st.title(Text.app_title[language])
+    st.subheader(Text.app_title[language], divider=True)
         
 #############
 ### ACTION ##
@@ -45,6 +45,11 @@ elif st.session_state.current_screen == matches_screen:
 elif st.session_state.current_screen == ranking_screen:
     run_ranking_screen(controller)
     
+    
+from version import version
+
+st.divider()
+st.write("Tournament Manager © Version " + version)
     
     
     
