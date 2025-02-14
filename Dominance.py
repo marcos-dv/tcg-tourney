@@ -52,7 +52,7 @@ def draw_graph_layers(nodes, arcs, semi_arcs, stats_df, img_path='dominance_grap
     G.add_edges_from(arcs)
     G.add_edges_from(semi_arcs)
     
-    scale = 2
+    scale = 2 # scale of the picture depends on number of players
     if len(nodes) <= 10:
         scale = 2
     elif len(nodes) <= 14:
@@ -93,12 +93,12 @@ def draw_graph_layers(nodes, arcs, semi_arcs, stats_df, img_path='dominance_grap
     # Draw primary arcs
     nx.draw_networkx_edges(G, pos=layout, edgelist=arcs,
                             edge_color='green', arrows=True,
-                            arrowstyle='-|>', node_size=1000,
+                            arrowstyle='-|>', node_size=node_sizes,
                             arrowsize=20,  # Increase this value for bigger arrows
                             width=2, connectionstyle='arc3,rad=0.2')
 
     # Draw additional arcs with a discontinuous arrow style
-    nx.draw_networkx_edges(G, pos=layout, edgelist=semi_arcs, edge_color='gray', arrows=True, arrowstyle='-', style='-', node_size=1000, width=1, connectionstyle='arc3,rad=0.1')
+    nx.draw_networkx_edges(G, pos=layout, edgelist=semi_arcs, edge_color='gray', arrows=True, arrowstyle='-', style='-', node_size=node_sizes, width=1, connectionstyle='arc3,rad=0.1')
 
     # Save the graph as a PNG file
     plt.savefig(img_path)
