@@ -77,6 +77,7 @@ def draw_graph_layers(nodes, arcs, semi_arcs, stats_df, img_path='dominance_grap
         vertical_shift = ((stats_df.loc[stats_df['Name'] == node, 'Points'].values[0]) % 3 - 1) / 10
         layout[node] = (y, x+vertical_shift)  # Swap x and y
 
+    # Node sizes
     node_size_base = 2400
     node_size_max = 6000
     ratio_words = 0.30
@@ -84,10 +85,18 @@ def draw_graph_layers(nodes, arcs, semi_arcs, stats_df, img_path='dominance_grap
         return max(len(s) for s in s.split(' '))
     node_sizes = [min(node_size_max, int(node_size_base*max(1,node_max_string(node)*ratio_words))) for node in G.nodes()]
         
+    # Labels in the node, use new lines for big names
     labels = {node: (lambda s: s.replace(" ", "\n"))(node) for node in G.nodes()}
     
+    # Special colors for the first three!
+    node_colors = {node:'skyblue' for node in G.nodes()}
+    first_3_names = stats_df['Name'].head(3).tolist()
+    node_colors[first_3_names[0]] = 'gold'
+    node_colors[first_3_names[1]] = 'slategrey'
+    node_colors[first_3_names[2]] = 'peru' #peruano
+
     # Draw nodes
-    nx.draw_networkx_nodes(G, pos=layout, node_color='skyblue', node_size=node_sizes)
+    nx.draw_networkx_nodes(G, pos=layout, node_color=node_colors.values(), node_size=node_sizes)
     nx.draw_networkx_labels(G, pos=layout, labels=labels, font_color='black', font_weight='bold', font_size=12)
 
     # Draw primary arcs
@@ -110,5 +119,5 @@ def draw_graph_layers(nodes, arcs, semi_arcs, stats_df, img_path='dominance_grap
         
 def save_dominance_graph(nodes, arcs, semi_arcs, stats_df, img_path = 'dominance_graph.png', seed=33):
     return draw_graph_layers(nodes, arcs, semi_arcs, stats_df, img_path, seed)
-    return draw_unordered_graph(nodes, arcs, semi_arcs, img_path, seed)
+    #return draw_unordered_graph(nodes, arcs, semi_arcs, img_path, seed)
     
