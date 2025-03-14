@@ -74,7 +74,7 @@ def draw_graph_layers(nodes, arcs, semi_arcs, stats_df, img_path='dominance_grap
     # Swap x and y coordinates to make layers horizontal (higher points at the top)
     for node, (x, y) in layout.items():
         # % mod 3 since layers are each 3 points. Divide by ten to not disturb the image too much
-        vertical_shift = ((stats_df.loc[stats_df['Name'] == node, 'Points'].values[0]) % 3 - 1) / 10
+        vertical_shift = ((stats_df.loc[stats_df['Name'] == node, 'Points'].values[0]) % 3 - 1) / 4
         layout[node] = (y, x+vertical_shift)  # Swap x and y
 
     # Node sizes
